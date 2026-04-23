@@ -39,21 +39,21 @@ export default function Calendrier() {
     const start = format(weekStart, "yyyy-MM-dd");
     const end = format(weekEnd, "yyyy-MM-dd");
 
-    const queries: Promise<any>[] = [];
+    let pRes: any = { data: [] };
+    let rRes: any = { data: [] };
     if (isAdmin) {
-      queries.push(
+      [pRes, rRes] = await Promise.all([
         supabase.from("permanences").select("*, profiles!permanences_surveillant_id_fkey(full_name)").gte("date", start).lte("date", end),
         supabase.from("restaurant_assignments").select("*, profiles!restaurant_assignments_surveillant_id_fkey(full_name)").gte("date", start).lte("date", end),
-      );
+      ]);
     } else if (user) {
-      queries.push(
+      [pRes, rRes] = await Promise.all([
         supabase.from("permanences").select("*").eq("surveillant_id", user.id).gte("date", start).lte("date", end),
         supabase.from("restaurant_assignments").select("*").eq("surveillant_id", user.id).gte("date", start).lte("date", end),
-      );
+      ]);
     }
-    const [p, r] = await Promise.all(queries);
-    setPerms(p.data ?? []);
-    setRestos(r.data ?? []);
+    setPerms(pRes.data ?? []);
+    setRestos(rRes.data ?? []);
 
     if (isAdmin) {
       const { data: roles } = await supabase
