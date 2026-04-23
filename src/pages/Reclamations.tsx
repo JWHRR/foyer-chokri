@@ -38,10 +38,20 @@ export default function Reclamations() {
   const load = async () => {
     setLoading(true);
     const [r, d] = await Promise.all([
-      supabase.from("reclamations").select("*, dortoirs(code), creator:profiles!reclamations_created_by_fkey(full_name)").order("created_at", { ascending: false }),
+      supabase.from("reclamations").select("*, dortoirs(code)").order("created_at", { ascending: false }),
       supabase.from("dortoirs").select("id, code").order("code"),
     ]);
-    setItems(r.data ?? []);
+    const reclamations = r.data ?? [];
+    const creatorIds = Array.from(new Set(reclamations.map((x: any) => x.created_by).filter(Boolean)));
+    let nameById: Record<string, string> = {};
+    if (creatorIds.length > 0) {
+      const { data: profs } = await supabase
+        .from("profiles")
+        .select("user_id, full_name")
+        .in("user_id", creatorIds);
+      nameById = Object.fromEntries((profs ?? []).map((p: any) => [p.user_id, p.full_name]));
+    }
+    setItems(reclamations.map((x: any) => ({ ...x, creator: { full_name: nameById[x.created_by] ?? "—" } })));
     setDortoirs(d.data ?? []);
     setLoading(false);
   };
