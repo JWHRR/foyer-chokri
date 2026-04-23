@@ -18,14 +18,34 @@ export default function Dortoirs() {
 
   const load = async () => {
     setLoading(true);
-    const [d, a, s] = await Promise.all([
+    const [d, a, sRoles] = await Promise.all([
       supabase.from("dortoirs").select("*").order("code"),
-      supabase.from("dortoir_assignments").select("*, profiles!dortoir_assignments_surveillant_id_fkey(full_name), dortoirs(code)"),
-      supabase.from("user_roles").select("user_id, profiles!inner(full_name, user_id)").eq("role", "SURVEILLANT"),
+      supabase.from("dortoir_assignments").select("*, dortoirs(code)"),
+      supabase.from("user_roles").select("user_id").eq("role", "SURVEILLANT"),
     ]);
+    const survIds = (sRoles.data ?? []).map((r: any) => r.user_id);
+    const { data: survProfiles } = survIds.length
+      ? await supabase.from("profiles").select("user_id, full_name").in("user_id", survIds)
+      : { data: [] as any[] };
+
+    // Attach surveillant names to assignments
+    const profileMap = new Map<string, string>();
+    (survProfiles ?? []).forEach((p: any) => profileMap.set(p.user_id, p.full_name || "(sans nom)"));
+    // Also fetch names for any assignment surveillant not in surv list (edge case)
+    const allAssignIds = Array.from(new Set((a.data ?? []).map((x: any) => x.surveillant_id)));
+    const missing = allAssignIds.filter((id) => !profileMap.has(id as string));
+    if (missing.length) {
+      const { data: extra } = await supabase.from("profiles").select("user_id, full_name").in("user_id", missing as string[]);
+      (extra ?? []).forEach((p: any) => profileMap.set(p.user_id, p.full_name || "(sans nom)"));
+    }
+    const enrichedAssigns = (a.data ?? []).map((x: any) => ({
+      ...x,
+      surveillant_name: profileMap.get(x.surveillant_id) || "—",
+    }));
+
     setDortoirs(d.data ?? []);
-    setAssigns(a.data ?? []);
-    setSurveillants(((s.data ?? []) as any[]).map((r: any) => ({ user_id: r.user_id, full_name: r.profiles.full_name || "(sans nom)" })));
+    setAssigns(enrichedAssigns);
+    setSurveillants((survProfiles ?? []).map((p: any) => ({ user_id: p.user_id, full_name: p.full_name || "(sans nom)" })));
     setLoading(false);
   };
 
@@ -108,7 +128,7 @@ export default function Dortoirs() {
                     <ul className="space-y-1">
                       {dortoirAssigns.map((a) => (
                         <li key={a.id} className="flex items-center justify-between text-sm p-2 rounded bg-muted/40">
-                          <span>{a.profiles?.full_name || "—"}</span>
+                          <span>{a.surveillant_name || "—"}</span>
                           <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => remove(a.id)}>
                             <X className="h-3 w-3 text-destructive" />
                           </Button>
