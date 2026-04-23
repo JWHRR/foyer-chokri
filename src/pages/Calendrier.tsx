@@ -58,9 +58,13 @@ export default function Calendrier() {
     if (isAdmin) {
       const { data: roles } = await supabase
         .from("user_roles")
-        .select("user_id, profiles!inner(full_name, user_id)")
+        .select("user_id")
         .eq("role", "SURVEILLANT");
-      const list = (roles ?? []).map((r: any) => ({ user_id: r.user_id, full_name: r.profiles.full_name || "(sans nom)" }));
+      const ids = (roles ?? []).map((r: any) => r.user_id);
+      const { data: profs } = ids.length
+        ? await supabase.from("profiles").select("user_id, full_name").in("user_id", ids)
+        : { data: [] as any[] };
+      const list = (profs ?? []).map((p: any) => ({ user_id: p.user_id, full_name: p.full_name || "(sans nom)" }));
       setSurveillants(list);
     }
     setLoading(false);
