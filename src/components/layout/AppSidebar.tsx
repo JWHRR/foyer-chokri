@@ -60,7 +60,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <div className="flex flex-col min-w-0">
-              <span className="font-bold text-sm leading-tight">Foyer Manager</span>
+              <span className="font-bold text-sm leading-tight">aziz tahan</span>
               <span className="text-xs text-muted-foreground leading-tight">Gestion du foyer</span>
             </div>
           )}

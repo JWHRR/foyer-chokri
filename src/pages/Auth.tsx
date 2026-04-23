@@ -65,7 +65,7 @@ export default function AuthPage() {
           <div className="h-14 w-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow mb-4">
             <Building2 className="h-7 w-7 text-primary-foreground" />
           </div>
-          <h1 className="text-3xl font-bold">Foyer Manager</h1>
+          <h1 className="text-3xl font-bold">aziz tahan</h1>
           <p className="text-muted-foreground mt-1">Gestion complète du foyer</p>
         </div>
 
