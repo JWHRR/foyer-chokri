@@ -128,7 +128,7 @@ export default function Dortoirs() {
                     <ul className="space-y-1">
                       {dortoirAssigns.map((a) => (
                         <li key={a.id} className="flex items-center justify-between text-sm p-2 rounded bg-muted/40">
-                          <span>{a.profiles?.full_name || "—"}</span>
+                          <span>{a.surveillant_name || "—"}</span>
                           <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => remove(a.id)}>
                             <X className="h-3 w-3 text-destructive" />
                           </Button>
