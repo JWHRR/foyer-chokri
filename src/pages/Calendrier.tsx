@@ -12,10 +12,11 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Loader2, Plus, ChevronLeft, ChevronRight, Trash2 } from "lucide-react";
-import { addDays, format, startOfWeek } from "date-fns";
+import { addDays, format, startOfWeek, eachWeekOfInterval, endOfYear, startOfYear } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
 import { SLOT_LABELS, REPAS_LABELS, PermanenceSlot, RepasType } from "@/lib/types";
+import { Checkbox } from "@/components/ui/checkbox";
 
 export default function Calendrier() {
   const { user, primaryRole } = useAuth();
